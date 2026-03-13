@@ -11,3 +11,5 @@ dependencies:
   - jupyter
   - notebook
   - pip
+  - pip:
+    - suite2p[gui]
