@@ -8,6 +8,10 @@ dependencies:
   - pandas
   - matplotlib
   - scipy
+  - scikit-learn
+  - seaborn
+  - networkx
+  - plotly
   - jupyter
   - notebook
   - pip
