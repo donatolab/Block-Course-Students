@@ -16,5 +16,4 @@ dependencies:
   - notebook
   - pip
   - pip:
-    - suite2p[gui]
     - ipykernel

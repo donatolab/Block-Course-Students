@@ -444,17 +444,17 @@ def plot_binarization_thresholds(trace, time_s, thresholds, colors=None, title='
     return fig
 
 
-def plot_threshold_vs_cnmf(dF_F, binary_cnmf, neuron_ids, time_s, threshold, title='Threshold vs. CNMF binarization'):
-    """Compare threshold binarization against CNMF binarization for selected neurons.
+def plot_threshold_vs_our(dF_F, binary_our, neuron_ids, time_s, threshold, title='Threshold vs. Our binarization'):
+    """Compare threshold binarization against our binarization for selected neurons.
 
     For each neuron one sub-panel shows: (1) the raw dF/F trace in blue, (2) the threshold
-    binarization in red, and (3) the CNMF binarization in green.  This lets you judge whether
+    binarization in red, and (3) the our binarization in green.  This lets you judge whether
     the two methods agree on when the neuron was active.
 
     Parameters
     ----------
     dF_F : np.ndarray, shape (n_neurons, n_frames)
-    binary_cnmf : np.ndarray, shape (n_neurons, n_frames)
+    binary_our : np.ndarray, shape (n_neurons, n_frames)
     neuron_ids : list[int]
     time_s : np.ndarray
     threshold : float
@@ -475,8 +475,8 @@ def plot_threshold_vs_cnmf(dF_F, binary_cnmf, neuron_ids, time_s, threshold, tit
                         (trace >= threshold).astype(float) * tmax * 0.9,
                         alpha=0.4, color='tomato', label=f'Threshold ({threshold})')
         ax.fill_between(time_s, 0,
-                        binary_cnmf[nid, :len(time_s)] * tmax * 0.7,
-                        alpha=0.4, color='green', label='CNMF')
+                        binary_our[nid, :len(time_s)] * tmax * 0.7,
+                        alpha=0.4, color='green', label='our')
         ax.set_ylabel(f'N{nid}', fontsize=9)
         if ax is axes[0]:
             ax.legend(fontsize=8, loc='upper right')

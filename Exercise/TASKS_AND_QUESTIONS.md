@@ -36,7 +36,7 @@ This document provides a complete list of all tasks and questions that students 
 
 **Goal:** Explore calcium imaging data from hippocampal neurons. Analyze dF/F fluorescence traces, binarize activity, investigate correlation structure, cluster neurons into functional groups, and apply PCA to reveal the low-dimensional manifold of population activity.
 
-Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (432 neurons × 36025 frames, CNMF-extracted)
+Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (432 neurons × 36025 frames, our-extracted)
 
 ### Questions
 
