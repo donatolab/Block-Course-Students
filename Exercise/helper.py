@@ -3,7 +3,7 @@ Block Course helper functions for visualization and data loading.
 
 Usage in solution notebooks:
     import sys, os
-    sys.path.insert(0, os.path.abspath('../../Students/Exercise'))
+    sys.path.insert(0, os.path.abspath('../../Block-Course-Students/Exercise'))
     from helper import *
 """
 from typing import Union, List
@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 from matplotlib.path import Path
 from matplotlib.patches import PathPatch
 from matplotlib.axes import Axes
+import networkx as nx
 
 
 # ─── Data loading ─────────────────────────────────────────────────────────────
@@ -506,29 +507,48 @@ def plot_shuffle_significance(z_scores, sig_mask, n_sub, cluster_labels, corr_ob
     fig
     """
     n_sig = int(sig_mask.sum()) // 2
-    fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    fig.suptitle(f'Shuffle significance analysis — {n_sub} neurons, circular time-shift null', fontsize=13)
 
     im = axes[0].imshow(z_scores, cmap='hot', vmin=0, vmax=10, aspect='auto')
     plt.colorbar(im, ax=axes[0], label='Z-score')
-    axes[0].set_title(f'Pairwise correlation Z-scores\n({n_sub} neurons, circular time-shift null)')
+    axes[0].set_title(f'Pairwise correlation Z-scores')
     axes[0].set_xlabel('Neuron')
     axes[0].set_ylabel('Neuron')
 
     ax = axes[1]
-    angles = np.linspace(0, 2 * np.pi, n_sub, endpoint=False)
-    nx, ny = np.cos(angles), np.sin(angles)
+    node_angles = np.linspace(0, 2 * np.pi, n_sub, endpoint=False)
+    cx, cy = np.cos(node_angles), np.sin(node_angles)
     rows, cols = np.where(sig_mask)
     for r, c in zip(rows, cols):
         if r < c:
-            ax.plot([nx[r], nx[c]], [ny[r], ny[c]],
-                    color='steelblue', lw=float(corr_obs[r, c]) * 3, alpha=0.5)
-    ax.scatter(nx, ny, s=40, c=cluster_labels, cmap='tab10',
+            ax.plot([cx[r], cx[c]], [cy[r], cy[c]],
+                    color='black', lw=float(corr_obs[r, c]) * 3, alpha=0.5)
+    ax.scatter(cx, cy, s=40, c=cluster_labels, cmap='tab10',
                zorder=5, edgecolors='k', linewidths=0.5)
-    for i, (x, y) in enumerate(zip(nx, ny)):
+    for i, (x, y) in enumerate(zip(cx, cy)):
         ax.text(x * 1.12, y * 1.12, str(i), fontsize=6, ha='center', va='center')
     ax.set_aspect('equal')
     ax.axis('off')
     ax.set_title(f'Significant correlation network\n(edge width ∝ r, n_sig={n_sig})')
+
+    G = nx.Graph()
+    G.add_nodes_from(range(n_sub))
+    for r, c in zip(rows, cols):
+        if r < c:
+            G.add_edge(r, c, weight=float(corr_obs[r, c]))
+    pos = nx.spring_layout(G, seed=42)
+    cmap = plt.get_cmap('tab10')
+    node_colors = [cmap(label % 10) for label in cluster_labels]
+    edge_weights = [G[u][v]['weight'] * 3 for u, v in G.edges()]
+    nx.draw_networkx_nodes(G, pos, ax=axes[2], node_color=node_colors,
+                           node_size=80, edgecolors='k', linewidths=0.5)
+    nx.draw_networkx_edges(G, pos, ax=axes[2], width=edge_weights,
+                           edge_color='black', alpha=0.8)
+    nx.draw_networkx_labels(G, pos, ax=axes[2], font_size=6)
+    axes[2].set_title(f'NetworkX graph\n(spring layout, n_sig={n_sig})')
+    axes[2].axis('off')
+
     plt.tight_layout()
     return fig
 
