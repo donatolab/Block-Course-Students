@@ -6,7 +6,6 @@ Usage in solution notebooks:
     sys.path.insert(0, os.path.abspath('../../Students/Exercise'))
     from helper import *
 """
-import os
 from typing import Union, List
 import numpy as np
 import pandas as pd
