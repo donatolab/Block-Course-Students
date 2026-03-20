@@ -8,10 +8,10 @@ This repository contains the exercises you will need to complete during the cour
 
 The course is divided into 4 tasks, each building on the previous one:
 
-*   **Task 0**: Python Basics — A warm-up to get comfortable with Python syntax, lists, arrays, and data loading.
-*   **Task 1**: Tracking Data Analysis — Loading and inspecting behavioral tracking data from DeepLabCut (DLC).
-*   **Task 2**: Behavioral Metrics — Calculating speed, distance, smoothing trajectories, and converting to real-world units.
-*   **Task 3**: Neuronal Activity & Place Cells — Analyzing calcium imaging data, correlating behavior with neuronal activity, and discovering Place Cells.
+*   **Task 0**: Python Basics — A warm-up to get comfortable with Python syntax, lists, arrays, indexing, slicing, and loading data.
+*   **Task 1**: Neuronal Activity Analysis — Loading and exploring calcium imaging dF/F traces, binarizing activity, computing correlation matrices, hierarchical clustering, shuffle tests, and PCA.
+*   **Task 2**: Behavioral Data Analysis — Assessing DeepLabCut tracking quality, calibrating coordinates, smoothing trajectories, and converting position data to distance and speed.
+*   **Task 3**: Integration and Place Cells — Combining neural and behavioral data to segment running/resting states, explore population dynamics, and discover place cells.
 
 📋 For a detailed overview of all tasks and questions, see [**Exercise/TASKS_AND_QUESTIONS.md**](Exercise/TASKS_AND_QUESTIONS.md).
 
@@ -87,22 +87,24 @@ Students/
 ├── README.md                     # This file
 └── Exercise/
     ├── TASKS_AND_QUESTIONS.md    # Overview of all tasks and questions
+    ├── helper.py                 # Shared visualization and data-loading helpers
     ├── Task 0/                   # Python Basics
     │   ├── Task0.ipynb
     │   └── magic.csv
-    ├── Task 1/                   # Tracking Data Analysis
+    ├── Task 1/                   # Neuronal Activity Analysis
     │   ├── Task1.ipynb
-    │   ├── Bodyparts.csv
-    │   └── raw_trackingdata.csv
-    ├── Task 2/                   # Behavioral Metrics
+    │   ├── dF_F_traces.npz       # dF/F fluorescence traces  (432 neurons × 36025 frames)
+    │   ├── binarized_traces.npz  # CNMF binarized traces     (432 neurons × 36025 frames)
+    │   └── raw_trackingdata.npz  # DeepLabCut tracking data  (36000 frames × 43 columns)
+    ├── Task 2/                   # Behavioral Data Analysis
     │   ├── Task2.ipynb
-    │   ├── head_neck.csv
-    │   └── arena_still_frame.png
-    └── Task 3/                   # Neuronal Activity & Place Cells
+    │   ├── head_neck.npz         # Head-neck coordinates     (36000 frames × 3 columns)
+    │   └── arena_still_frame.png # Arena reference image
+    └── Task 3/                   # Integration and Place Cells
         ├── Task3.ipynb
-        ├── binarized_traces.csv
-        ├── head_neck_smooth.csv
-        └── speed.csv
+        ├── binarized_traces.npz  # Curated neural traces     (36025 frames × 365 neurons)
+        ├── head_neck_smooth.npz  # Smoothed position         (36000 frames × 2 columns)
+        └── speed.npz             # Speed in cm/s             (36000 frames × 1 column)
 ```
 
 ## Need Help?

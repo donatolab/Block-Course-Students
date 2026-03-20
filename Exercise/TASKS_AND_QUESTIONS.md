@@ -32,97 +32,109 @@ This document provides a complete list of all tasks and questions that students 
 
 ---
 
-## Task 1: Tracking Data Analysis (DeepLabCut)
+## Task 1: Neuronal Activity Analysis
 
-**Goal:** Load and inspect DeepLabCut tracking data, analyze estimator quality, and identify the most reliable body part for tracking.
+**Goal:** Explore calcium imaging data from hippocampal neurons. Analyze dF/F fluorescence traces, binarize activity, investigate correlation structure, cluster neurons into functional groups, and apply PCA to reveal the low-dimensional manifold of population activity.
+
+Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (432 neurons × 36025 frames, CNMF-extracted)
 
 ### Questions
 
 | # | Question |
 |---|----------|
-| Q1.1 | What are the dimensions of the tracking data matrix? How many time points, rows, and columns does it have? |
-| Q1.2 | Inspect the first 5 rows and columns of the matrix. What do they represent? |
-| Q1.3 | Extract the first column — which part of the data does it represent? |
-| Q1.4 | What does the first row represent? |
-| Q1.5 | After watching the DLC tracking video, which body part do you expect to be tracked best? Which is tracked worst? |
-| Q1.6 | What are the column indices for the first body part's data (X, Y, Likelihood)? |
-| Q1.7 | Think of a statistical operation to calculate the overall tracking accuracy for each body part. The output should be a single value per body part. |
-| Q1.8 | What is the best-tracked body part according to the estimator values? Why is your chosen operator more suitable than others? |
-| Q1.9 | The estimator matrix has different dimensions than the raw matrix. What are they? What do we need to keep in mind when mapping back to the raw data? |
+| Q1.1 | What does dF/F represent biologically? What does a high dF/F value indicate? |
+| Q1.2 | What does the pairwise correlation matrix of 4 neurons tell you? What do values near 1 and near 0 indicate? |
+| Q1.3 | What is the effect of a low vs. high threshold on binarization? What are the consequences of each? |
+| Q1.4 | How does binarization change the correlation structure compared to continuous dF/F? |
+| Q1.5 | What do the clusters in hierarchical clustering of the full population reveal? |
+| Q1.6 | What does the Sankey plot show when comparing dF/F vs. binarized clustering? |
+| Q1.7 | Which shuffling method is most appropriate for testing pairwise correlations, and why? |
+| Q1.8 | What shape do you observe in the 3D PCA plot, and why does it arise in a spatial navigation task? |
+| Q1.9 | Why does the PCA of dF/F differ from the PCA of binarized data? |
 
 ### Coding Tasks
 
 | # | Task |
 |---|------|
-| T1.1 | Load `Bodyparts.csv` and `raw_trackingdata.csv` using Pandas |
-| T1.2 | Extract estimator (likelihood) columns by slicing every 3rd column |
-| T1.3 | Calculate a summary statistic (mean) for each body part's estimator |
-| T1.4 | Plot the trajectory of the best-tracked body part |
+| T1.1 | Load `dF_F_traces.npz` and inspect the shape |
+| T1.2 | Select 4 random neurons and plot their dF/F traces as line plots over time |
+| T1.3 | Compute and visualize the pairwise correlation matrix for the 4 neurons |
+| T1.4 | Binarize dF/F traces using at least 3 different threshold values; overlay on continuous traces |
+| T1.5 | Compute the correlation matrix of the binarized 4 neurons; compare to the dF/F matrix |
+| T1.6 | Compute and visualize the full correlation matrix for all neurons with hierarchical clustering |
+| T1.7 | Create a raster plot with per-neuron firing rate and network event rate subplots |
+| T1.8 | Build a Sankey/alluvial diagram comparing cluster assignments from dF/F vs. binarized clustering |
+| T1.9 | Implement a circular time-shift shuffle test and visualize the significant correlation network |
+| T1.10 | Apply PCA to dF/F and binarized traces; visualize the first 3 PCs in 3D |
 
 ---
 
-## Task 2: Behavioral Metrics (Speed & Distance)
+## Task 2: Behavioral Data Analysis
 
-**Goal:** Calculate physical metrics like distance and speed from tracking coordinates, including coordinate correction, smoothing, and unit conversion.
+**Goal:** Move from raw DeepLabCut tracking data to calibrated behavioral metrics. Assess tracking quality, select the best-tracked body part, apply coordinate calibration and smoothing, then compute distance and speed.
+
+Data: `raw_trackingdata.npz` (36000 frames × 43 columns), `head_neck.npz` (36000 frames × 3 columns), `arena_still_frame.png`
 
 ### Questions
 
 | # | Question |
 |---|----------|
-| Q2.1 | Look at the `head_neck` matrix — what data is given in each column? |
-| Q2.2 | How can we calculate coordinates for a new reference point? What information do we need? |
-| Q2.3 | What are the X and Y pixel coordinates for the upper-left corner of the arena? |
-| Q2.4 | What does the smoothing parameter `k` do? How does the rolling mean smoothing work? |
-| Q2.5 | What happens when you increase the `k` value? How does the plot change? |
-| Q2.6 | Why do we calculate `to_x - from_x` and `to_y - from_y` in the Pythagorean equation? |
-| Q2.7 | In what unit is the distance between two points of an image given? |
-| Q2.8 | What is the length of the arena side wall in pixels? What is the cm/pixel ratio? |
-| Q2.9 | How many distance values do we have compared to position values? Why? |
-| Q2.10 | How do we convert the frame-based time scale to seconds? |
+| Q2.1 | What does the DeepLabCut data matrix contain and how is it structured? What does each column group represent? |
+| Q2.2 | What statistical measure is used to assess tracking quality per body part, and why is it appropriate? |
+| Q2.3 | Which body part is best tracked and why? What feature of body part position affects tracking reliability? |
+| Q2.4 | What does the smoothing parameter `k` control? What are the trade-offs between large and small `k`? |
+| Q2.5 | How is the coordinate system shifted to the arena origin? What information do you need? |
+| Q2.6 | Why does the distance array have N−1 values for N position values? |
+| Q2.7 | How is the pixel-to-cm calibration factor computed? What measurements are required? |
+| Q2.8 | How is distance per frame converted to speed in cm/s? What is the role of the frame rate? |
 
 ### Coding Tasks
 
 | # | Task |
 |---|------|
-| T2.1 | Load `head_neck.csv` and the arena still-frame image |
-| T2.2 | Find the pixel coordinates of the arena corner and shift the coordinate system |
-| T2.3 | Smooth X and Y coordinates using `rolling().mean()` |
-| T2.4 | Calculate the Euclidean distance between the first two consecutive points |
-| T2.5 | Calculate distances between all consecutive frames using `np.diff()` |
-| T2.6 | Convert pixel distances to centimeters using a calibration factor |
-| T2.7 | Calculate total distance traveled in cm and meters |
-| T2.8 | Calculate speed in cm/s using the frame rate (20 Hz) |
+| T2.1 | Load `raw_trackingdata.npz` and inspect the matrix shape and column structure |
+| T2.2 | Extract likelihood columns using stride slicing (`[:, 3::3]`) |
+| T2.3 | Compute mean likelihood per body part and plot a bar chart |
+| T2.4 | Plot the raw trajectory of the best-tracked body part (invert Y-axis) |
+| T2.5 | Load `head_neck.npz` and the arena still frame; identify the corner reference point |
+| T2.6 | Shift the coordinate system to the arena origin |
+| T2.7 | Apply a rolling mean (k=20) and compare smoothed vs. raw trajectory |
+| T2.8 | Compute Euclidean frame-to-frame displacement using `np.diff()` |
+| T2.9 | Convert pixel displacement to centimetres using the arena calibration |
+| T2.10 | Compute speed in cm/s and visualize speed over time and trajectory colored by speed |
 
 ---
 
-## Task 3: Neuronal Activity & Place Cells
+## Task 3: Integration and Place Cells
 
-**Goal:** Correlate animal behavior (running vs. resting) with calcium imaging data and discover Place Cells in the hippocampus.
+**Goal:** Link behavioral state to neuronal activity. Segment behavior into running and resting, construct raster plots with speed overlay, map individual neuron activity to arena positions, and identify place cells.
+
+Data: `binarized_traces.npz` (36025 frames × 365 neurons), `head_neck_smooth.npz` (36000 frames × 2), `speed.npz` (36000 frames × 1)
 
 ### Questions
 
 | # | Question |
 |---|----------|
-| Q3.1 | How do you choose the `k` value for smoothing the speed? What biological and computational aspects do you consider? |
-| Q3.3 | Find a good lower-bound threshold for running speed. What ratio of running vs. resting frames do you get? Is this expected? |
-| Q3.4 | Did your considerations turn out as expected? If not, explain why and how you adjusted. |
-| Q3.6 | How many cells were detected in the dataset? (Derive from matrix dimensions) |
-| Q3.7 | What can you derive from the raster plot? Where do neuronal events have the highest frequency? |
-| Q3.8 | Calculate the smoothed event rate for the entire neuronal network. |
-| Q3.9 | Plot the animal's running path and overlay neuronal events. Identify Place Cells vs. non-Place Cells. |
+| Q3.1 | Why should you truncate (not zero-pad) when aligning neural and behavioral data with different frame counts? |
+| Q3.2 | How do you choose the smoothing window `k` and speed threshold for running detection? Justify biologically. |
+| Q3.3 | What running/resting ratio do you observe? Is this expected? What would cause a ratio outside the typical range? |
+| Q3.4 | What patterns are visible in the raster plot when speed is overlaid? Do network events co-occur with running? |
+| Q3.5 | How do you identify a place cell from a spatial firing map? What distinguishes it from a non-place cell? |
+| Q3.6 | How does the Task 1 correlation structure relate to observed place fields? |
+| Q3.7 | How does the ring attractor from Task 1 PCA connect to the place-cell findings in Task 3? |
 
 ### Coding Tasks
 
 | # | Task |
 |---|------|
-| T3.1 | Load speed data and smooth it using a rolling mean |
-| T3.2 | Binarize behavior into running and resting using a speed threshold |
-| T3.3 | Calculate the percentage of time the animal spends running |
-| T3.4 | Load binarized neuronal traces and inspect the raster plot |
-| T3.5 | Calculate and plot the smoothed event rate across all neurons |
-| T3.6 | Load smoothed coordinates and extract activity for a single cell |
-| T3.7 | Plot neuronal activity overlaid on the animal's trajectory |
-| T3.8 | Explore multiple cells and compare Place Cells vs. non-Place Cells in a grid |
+| T3.1 | Load all three NPZ datasets and print their shapes |
+| T3.2 | Align frame counts by truncating to the minimum length |
+| T3.3 | Smooth speed with k=10 and binarize running with a 4 cm/s threshold |
+| T3.4 | Compute and report the running/resting ratio |
+| T3.5 | Build the enriched raster plot: neural activity + firing rate + network event rate + speed overlay |
+| T3.6 | Extract active-frame positions for a single neuron and plot on the trajectory |
+| T3.7 | Build a 4×4 grid of spatial firing maps for 16 different neurons |
+| T3.8 | Identify and describe at least one strong place-cell candidate and one non-place-cell |
 
 ---
 
@@ -131,6 +143,6 @@ This document provides a complete list of all tasks and questions that students 
 | Task | Topic | Key Skills |
 |------|-------|------------|
 | **Task 0** | Python Basics | Variables, arrays, matrices, loading CSV, indexing, slicing, logic |
-| **Task 1** | Tracking Data | Loading DLC data, inspecting matrices, estimator analysis, plotting trajectories |
-| **Task 2** | Behavioral Metrics | Coordinate correction, smoothing, Euclidean distance, unit conversion, speed |
-| **Task 3** | Neuronal Activity | Behavior binarization, raster plots, event rates, Place Cell discovery |
+| **Task 1** | Neuronal Activity Analysis | dF/F, binarization, correlation matrices, hierarchical clustering, Sankey, shuffle tests, PCA |
+| **Task 2** | Behavioral Data Analysis | Tracking quality, trajectory extraction, coordinate calibration, smoothing, distance, speed |
+| **Task 3** | Integration and Place Cells | Frame alignment, run/rest segmentation, raster + behavior, spatial firing maps, place cells |
