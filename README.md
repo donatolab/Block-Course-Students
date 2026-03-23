@@ -41,9 +41,6 @@ VS Code needs some extensions to work well with Python and Jupyter Notebooks.
     *   [**TODO Highlight**](https://marketplace.visualstudio.com/items?itemName=wayou.vscode-todo-highlight)
 4.  Additional recommended extensions:
     *   [**GitHub Copilot Chat**](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot-chat)
-    *   [**Rainbow CSV**](https://marketplace.visualstudio.com/items?itemName=mechatroner.rainbow-csv)
-    *   [**Indent Rainbow**](https://marketplace.visualstudio.com/items?itemName=oderwat.indent-rainbow)
-    *   [**Material Icon Theme**](https://marketplace.visualstudio.com/items?itemName=PKief.material-icon-theme)
 
 ### 3. Install Python (Miniconda)
 
