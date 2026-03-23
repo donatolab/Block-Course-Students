@@ -540,7 +540,7 @@ def plot_shuffle_significance(
     axes[0].set_xlabel('Neuron')
     axes[0].set_ylabel('Neuron')
 
-    def scale_linewidth(r, min_width=0.5, max_width=3.0):
+    def scale_linewidth(r, min_width=0.1, max_width=3.0):
         """Scale correlation coefficient r to a line width for visualization."""
         abs_r = abs(r)
         return min_width + (max_width - min_width) * abs_r  # Linear scaling
