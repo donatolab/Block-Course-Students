@@ -34,7 +34,7 @@ This document provides a complete list of all tasks and questions that students 
 
 ## Task 1: Neuronal Activity Analysis
 
-**Goal:** Explore calcium imaging data from hippocampal neurons. Analyze dF/F fluorescence traces, binarize activity, investigate correlation structure, cluster neurons into functional groups, and apply PCA to reveal the low-dimensional manifold of population activity.
+**Goal:** Explore calcium imaging data from hippocampal neurons. Analyze dF/F fluorescence traces, binarize activity, compare binarization methods, investigate correlation structure, cluster neurons into functional groups, and test statistical significance with shuffle methods.
 
 Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (432 neurons × 36025 frames, our-extracted)
 
@@ -46,11 +46,10 @@ Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (4
 | Q1.2 | What does the pairwise correlation matrix of 4 neurons tell you? What do values near 1 and near 0 indicate? |
 | Q1.3 | What is the effect of a low vs. high threshold on binarization? What are the consequences of each? |
 | Q1.4 | How does binarization change the correlation structure compared to continuous dF/F? |
-| Q1.5 | What do the clusters in hierarchical clustering of the full population reveal? |
-| Q1.6 | What does the Sankey plot show when comparing dF/F vs. binarized clustering? |
-| Q1.7 | Which shuffling method is most appropriate for testing pairwise correlations, and why? |
-| Q1.8 | What shape do you observe in the 3D PCA plot, and why does it arise in a spatial navigation task? |
-| Q1.9 | Why does the PCA of dF/F differ from the PCA of binarized data? |
+| Q1.5 | Compare the threshold-based and algorithm-based binarizations. Do they capture the same events? Does one seem more sensitive or specific than the other? |
+| Q1.6 | What do the clusters in hierarchical clustering of the full population reveal? |
+| Q1.7 | What does the Sankey plot show when comparing dF/F vs. binarized clustering? |
+| Q1.8 | Which shuffling method is most appropriate for testing pairwise correlations, and why? |
 
 ### Coding Tasks
 
@@ -61,11 +60,11 @@ Data: `dF_F_traces.npz` (432 neurons × 36025 frames), `binarized_traces.npz` (4
 | T1.3 | Compute and visualize the pairwise correlation matrix for the 4 neurons |
 | T1.4 | Binarize dF/F traces using at least 3 different threshold values; overlay on continuous traces |
 | T1.5 | Compute the correlation matrix of the binarized 4 neurons; compare to the dF/F matrix |
-| T1.6 | Compute and visualize the full correlation matrix for all neurons with hierarchical clustering |
-| T1.7 | Create a raster plot with per-neuron firing rate and network event rate subplots |
-| T1.8 | Build a Sankey/alluvial diagram comparing cluster assignments from dF/F vs. binarized clustering |
-| T1.9 | Implement a circular time-shift shuffle test and visualize the significant correlation network |
-| T1.10 | Apply PCA to dF/F and binarized traces; visualize the first 3 PCs in 3D |
+| T1.6 | Load `binarized_traces.npz` (algorithm-based); compare mean firing rate and overlay both binarizations on dF/F traces for the 4 selected neurons |
+| T1.7 | Compute and visualize the full correlation matrix for all neurons with hierarchical clustering (both dF/F and binarized) |
+| T1.8 | Create a raster plot sorted by mean firing rate |
+| T1.9 | Build a Sankey/alluvial diagram comparing cluster assignments from dF/F vs. binarized clustering |
+| T1.10 | Implement a shuffle test (try circular, random, and vertical methods) and visualize the significant correlation network; validate using a randomized control dataset |
 
 ---
 
@@ -121,7 +120,6 @@ Data: `binarized_traces.npz` (36025 frames × 365 neurons), `head_neck_smooth.np
 | Q3.4 | What patterns are visible in the raster plot when speed is overlaid? Do network events co-occur with running? |
 | Q3.5 | How do you identify a place cell from a spatial firing map? What distinguishes it from a non-place cell? |
 | Q3.6 | How does the Task 1 correlation structure relate to observed place fields? |
-| Q3.7 | How does the ring attractor from Task 1 PCA connect to the place-cell findings in Task 3? |
 
 ### Coding Tasks
 
@@ -143,6 +141,6 @@ Data: `binarized_traces.npz` (36025 frames × 365 neurons), `head_neck_smooth.np
 | Task | Topic | Key Skills |
 |------|-------|------------|
 | **Task 0** | Python Basics | Variables, arrays, matrices, loading CSV, indexing, slicing, logic |
-| **Task 1** | Neuronal Activity Analysis | dF/F, binarization, correlation matrices, hierarchical clustering, Sankey, shuffle tests, PCA |
+| **Task 1** | Neuronal Activity Analysis | dF/F, binarization, binarization method comparison, correlation matrices, hierarchical clustering, Sankey, shuffle tests |
 | **Task 2** | Behavioral Data Analysis | Tracking quality, trajectory extraction, coordinate calibration, smoothing, distance, speed |
 | **Task 3** | Integration and Place Cells | Frame alignment, run/rest segmentation, raster + behavior, spatial firing maps, place cells |
