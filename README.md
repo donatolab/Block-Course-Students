@@ -61,7 +61,7 @@ We have provided a file called `environment.yml` which lists all the Python libr
 1.  Open the **Anaconda Prompt** (Windows) or Terminal (macOS/Linux).
 2.  Navigate to this folder (the folder where this README is located).
     *   *Tip: You can copy the path from your file explorer and type `cd ` followed by pasting the path.*
-    *   Example: `cd "C:\Users\YourName\Documents\Block Course\Students"`
+    *   Example: `cd "C:\Users\YourName\Documents\Block Course\Block-Course-Students"`
 3.  Run the following command:
     ```bash
     conda env create -f environment.yml
@@ -82,7 +82,7 @@ We have provided a file called `environment.yml` which lists all the Python libr
 ## Directory Structure
 
 ```
-Students/
+Block-Course-Students/
 ├── environment.yml               # Conda environment definition
 ├── README.md                     # This file
 └── Exercise/
