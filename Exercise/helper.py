@@ -487,34 +487,64 @@ def plot_threshold_vs_our(dF_F, binary_our, neuron_ids, time_s, threshold, title
     return fig
 
 
-def plot_shuffle_significance(z_scores, sig_mask, n_sub, cluster_labels, corr_obs):
-    """Two-panel shuffle significance plot: Z-score heatmap + circular network graph.
+def plot_shuffle_significance(
+    z_scores: np.ndarray,
+    sig_mask: np.ndarray,
+    cluster_labels: np.ndarray,
+    corr_obs: np.ndarray,
+    title: str = 'Shuffle significance analysis'
+) -> plt.Figure:
+    """Three-panel shuffle significance plot: Z-score heatmap, circular network, and NetworkX graph.
 
-    Left panel — heatmap of Z-scores for all neuron pairs.  Hot colours = highly significant.
-    Right panel — circular network where each node is a neuron (coloured by cluster) and each
-    edge connects a significantly correlated pair (edge width ∝ observed correlation).
+    Visualizes statistical significance of pairwise neuronal correlations using a circular
+    time-shift null distribution test. Displays raw Z-scores, significant correlations in
+    circular layout, and a spring-layout network graph.
+
+    Left panel — heatmap of Z-scores for all neuron pairs. Hot colours indicate high significance.
+    Middle panel — circular network where each node is a neuron (coloured by cluster) and each
+    edge connects a significantly correlated pair (edge width proportional to observed correlation).
+    Right panel — spring layout of the same network for alternative visualization.
 
     Parameters
     ----------
-    z_scores : np.ndarray, shape (n_sub, n_sub)
-    sig_mask : np.ndarray[bool], shape (n_sub, n_sub)
-    n_sub : int
-    cluster_labels : np.ndarray[int], shape (n_sub,)   used to colour nodes
-    corr_obs : np.ndarray, shape (n_sub, n_sub)
+    z_scores : np.ndarray
+        Z-score matrix of shape (neurons, neurons). Entry [i,j] is the Z-score of the correlation
+        between neurons i and j.
+    sig_mask : np.ndarray
+        Boolean mask of shape (neurons, neurons) indicating which pairs are significantly correlated.
+    cluster_labels : np.ndarray
+        Integer array of shape (neurons,) containing cluster assignments for each neuron.
+        Used to colour nodes in the network graph (colourmap: tab10).
+    corr_obs : np.ndarray
+        Observed correlation coefficient matrix of shape (neurons, neurons). Edge widths in the
+        network visualizations are proportional to the absolute values in this matrix.
+    title : str, optional
+        Custom title for the figure suptitle. Will be displayed with dataset info appended.
+        Default is 'Shuffle significance analysis'.
 
     Returns
     -------
-    fig
+    fig : plt.Figure
+        The matplotlib figure object containing all three subpanels.
     """
+    n_sub = z_scores.shape[0]
     n_sig = int(sig_mask.sum()) // 2
     fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-    fig.suptitle(f'Shuffle significance analysis — {n_sub} neurons, circular time-shift null', fontsize=13)
-
+    fig.suptitle(f'{title} — {n_sub} neurons, {n_sig} significant pairs', fontsize=13)
+    cmap = plt.get_cmap('tab10')
+    node_colors = [cmap(label % 10) for label in cluster_labels]
+    
     im = axes[0].imshow(z_scores, cmap='hot', vmin=0, vmax=10, aspect='auto')
     plt.colorbar(im, ax=axes[0], label='Z-score')
     axes[0].set_title(f'Pairwise correlation Z-scores')
     axes[0].set_xlabel('Neuron')
     axes[0].set_ylabel('Neuron')
+
+    def scale_linewidth(r, min_width=0.5, max_width=3.0):
+        """Scale correlation coefficient r to a line width for visualization."""
+        abs_r = abs(r)
+        return min_width + (max_width - min_width) * abs_r  # Linear scaling
+    
 
     ax = axes[1]
     node_angles = np.linspace(0, 2 * np.pi, n_sub, endpoint=False)
@@ -523,9 +553,9 @@ def plot_shuffle_significance(z_scores, sig_mask, n_sub, cluster_labels, corr_ob
     for r, c in zip(rows, cols):
         if r < c:
             ax.plot([cx[r], cx[c]], [cy[r], cy[c]],
-                    color='black', lw=float(corr_obs[r, c]) * 3, alpha=0.5)
-    ax.scatter(cx, cy, s=40, c=cluster_labels, cmap='tab10',
-               zorder=5, edgecolors='k', linewidths=0.5)
+                    color='black', lw=scale_linewidth(corr_obs[r, c]), alpha=1)
+    ax.scatter(cx, cy, s=40, c=node_colors,
+               zorder=5, edgecolors='k', linewidths=1)
     for i, (x, y) in enumerate(zip(cx, cy)):
         ax.text(x * 1.12, y * 1.12, str(i), fontsize=6, ha='center', va='center')
     ax.set_aspect('equal')
@@ -538,13 +568,11 @@ def plot_shuffle_significance(z_scores, sig_mask, n_sub, cluster_labels, corr_ob
         if r < c:
             G.add_edge(r, c, weight=float(corr_obs[r, c]))
     pos = nx.spring_layout(G, seed=42)
-    cmap = plt.get_cmap('tab10')
-    node_colors = [cmap(label % 10) for label in cluster_labels]
-    edge_weights = [G[u][v]['weight'] * 3 for u, v in G.edges()]
+    edge_weights = [scale_linewidth(G[u][v]['weight']) for u, v in G.edges()]
     nx.draw_networkx_nodes(G, pos, ax=axes[2], node_color=node_colors,
                            node_size=80, edgecolors='k', linewidths=0.5)
     nx.draw_networkx_edges(G, pos, ax=axes[2], width=edge_weights,
-                           edge_color='black', alpha=0.8)
+                           edge_color='black', alpha=1)
     nx.draw_networkx_labels(G, pos, ax=axes[2], font_size=6)
     axes[2].set_title(f'NetworkX graph\n(spring layout, n_sig={n_sig})')
     axes[2].axis('off')
@@ -842,7 +870,7 @@ def run_clustering(corr_mat, n_clusters, method='ward'):
     return {'labels': labels, 'order': order, 'Z': Z, 'counts': counts}
 
 
-def run_shuffle_test(data, n_shuffles=200, method='circular', rng_seed=0):
+def run_shuffle_test(data, n_shuffles=200, method='circular', rng_seed=0, plot=True):
     """Permutation test for significant pairwise correlations.
 
     Builds a null distribution by shuffling the data in one of three ways,
@@ -904,6 +932,7 @@ def run_shuffle_test(data, n_shuffles=200, method='circular', rng_seed=0):
     sig_mask  = z_scores > 2.58
     np.fill_diagonal(sig_mask, False)
     n_sig     = int(sig_mask.sum()) // 2
+
     return corr_obs, z_scores, sig_mask, n_sig
 
 
