@@ -799,7 +799,8 @@ def plot_place_map(cell_id, ax, x, y, F_bin, title=None):
     ax.invert_yaxis()
     ax.set_aspect('equal')
     ax.axis('off')
-
+    ax.set_title(f'Neuron {cell_id} — spatial firing map', fontsize=11)
+    plt.tight_layout()
 
 def plot_place_map_grid(cell_ids, x, y, F_bin, ncols=4, figsize=(12, 12),
                         suptitle='Spatial firing maps'):
@@ -828,7 +829,112 @@ def plot_place_map_grid(cell_ids, x, y, F_bin, ncols=4, figsize=(12, 12),
     fig.suptitle(f'{suptitle}\n(red = active positions, gray = full trajectory)',
                  fontsize=12, y=1.01)
     plt.tight_layout()
+    plt.show()
     return fig
+
+
+def plot_firing_map_heatmap(cell_id, ax, x, y, F_bin, bin_size=5, sigma=15,
+                           cmap='jet', title=None):
+    """Spatial firing rate heatmap for a single neuron.
+
+    Divides the arena into square spatial bins and computes the mean event
+    rate per bin (activity / occupancy).  Both maps are Gaussian-smoothed
+    before dividing so the result handles edge bins naturally.
+
+    Parameters
+    ----------
+    cell_id : int
+        Column index in F_bin.
+    ax : matplotlib Axes
+    x, y : np.ndarray
+        Smoothed position in cm, shape (n_frames,).
+    F_bin : np.ndarray, shape (n_frames, n_neurons)
+        Binarized calcium activity.
+    bin_size : float
+        Spatial bin edge length in cm (default 5).
+    sigma : float
+        Gaussian smoothing kernel width in bins (default 1.5).
+        Set to 0 to disable smoothing.
+    cmap : str
+        Matplotlib colormap name (default 'hot').
+    title : str or None
+        Custom subplot title; defaults to 'Neuron {cell_id}'.
+    """
+    from scipy.ndimage import gaussian_filter
+
+    cell_trace = F_bin[:, cell_id]
+
+    # Bin edges spanning the full arena
+    x_edges = np.arange(np.nanmin(x), np.nanmax(x) + bin_size, bin_size)
+    y_edges = np.arange(np.nanmin(y), np.nanmax(y) + bin_size, bin_size)
+
+    # Occupancy (frames per bin) and activity (events per bin)
+    occupancy, _, _ = np.histogram2d(x, y, bins=[x_edges, y_edges])
+    activity, _, _  = np.histogram2d(x, y, bins=[x_edges, y_edges],
+                                     weights=cell_trace)
+
+    # Optional Gaussian smoothing applied to both maps before dividing
+    if sigma > 0:
+        occupancy = gaussian_filter(occupancy.astype(float), sigma=sigma)
+        activity  = gaussian_filter(activity.astype(float),  sigma=sigma)
+
+    # Rate map: events / frames; NaN for unvisited bins
+    with np.errstate(invalid='ignore', divide='ignore'):
+        rate_map = np.where(occupancy > 0, activity / occupancy, np.nan)
+
+    # imshow expects (rows=y, cols=x) → transpose
+    # extent + origin='upper' matches image coordinates (y increases downward)
+    im = ax.imshow(rate_map.T, origin='upper', aspect='equal', cmap=cmap,
+                   extent=[x_edges[0], x_edges[-1], y_edges[-1], y_edges[0]],
+                   interpolation='nearest')
+    plt.colorbar(im, ax=ax, label='Event rate', shrink=0.7, pad=0.02)
+
+    label = title if title is not None else f'Neuron {cell_id}'
+    n_active = int((cell_trace > 0).sum())
+    rate_pct  = n_active / len(cell_trace) * 100
+    ax.set_title(f'{label}\n{n_active} events ({rate_pct:.1f}%)', fontsize=9)
+    ax.axis('off')
+
+
+def plot_firing_map_heatmap_grid(cell_ids, x, y, F_bin, bin_size=5, sigma=15,
+                                ncols=4, figsize=(14, 12), cmap='jet',
+                                suptitle='Firing rate maps'):
+    """Grid of spatial firing rate heatmaps.
+
+    Parameters
+    ----------
+    cell_ids : list[int]
+    x, y : np.ndarray
+        Smoothed position in cm, shape (n_frames,).
+    F_bin : np.ndarray, shape (n_frames, n_neurons)
+        Binarized calcium activity.
+    bin_size : float
+        Spatial bin edge length in cm (default 5).
+    sigma : float
+        Gaussian smoothing kernel width in bins (default 1.5, 0 = off).
+    ncols : int
+    figsize : tuple
+    cmap : str
+    suptitle : str
+
+    Returns
+    -------
+    fig : matplotlib Figure
+    """
+    nrows = int(np.ceil(len(cell_ids) / ncols))
+    fig, axes = plt.subplots(nrows, ncols, figsize=figsize)
+    axes_flat = axes.flat if hasattr(axes, 'flat') else [axes]
+    for ax, cid in zip(axes_flat, cell_ids):
+        plot_firing_map_heatmap(cid, ax, x, y, F_bin,
+                               bin_size=bin_size, sigma=sigma, cmap=cmap)
+    for ax in list(axes_flat)[len(cell_ids):]:
+        ax.axis('off')
+    fig.suptitle(
+        f'{suptitle}\n(bin size = {bin_size} cm, σ = {sigma} bins)',
+        fontsize=12, y=1.01
+    )
+    plt.tight_layout()
+    plt.show()
 
 
 # ─── Analysis utilities ───────────────────────────────────────────────────────
