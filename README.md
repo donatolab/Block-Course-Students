@@ -55,15 +55,16 @@ We recommend using **Miniconda**, a minimal installer for Conda. Conda is an ope
 
 We have provided a file called `environment.yml` which lists all the Python libraries (packages) we will use. Conda will read this file and create a specific "environment" for this course. This keeps our course tools separate from other things on your computer.
 
-1.  Open the **Anaconda Prompt** (Windows) or Terminal (macOS/Linux).
-2.  Navigate to this folder (the folder where this README is located).
+1.  Download [this repository](https://github.com/donatolab/Block-Course-Students/archive/refs/heads/master.zip) and extract the content from the .zip file.
+2.  Open the **Anaconda Prompt** (Windows) or Terminal (macOS/Linux).
+3.  Navigate to this folder (the folder where this README is located).
     *   *Tip: You can copy the path from your file explorer and type `cd ` followed by pasting the path.*
     *   Example: `cd "C:\Users\YourName\Documents\Block Course\Block-Course-Students"`
-3.  Run the following command:
+4.  Run the following command:
     ```bash
     conda env create -f environment.yml
     ```
-4.  Wait for the installation to finish. It might take a few minutes.
+5.  Wait for the installation to finish. It might take a few minutes.
 
 ### 5. Start Working
 
